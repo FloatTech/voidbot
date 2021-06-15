@@ -1,6 +1,7 @@
 import websocket
 import time
 import json
+import re
 
 # WebSocket 地址
 websocket_url = 'ws://127.0.0.1:6700/ws'
@@ -20,6 +21,9 @@ class Plugin:
 
     def on_full_match(self, keyword=''):
         return self.context['post_type'] == 'message' and self.context['message'] == keyword
+
+    def on_reg_match(self, pattern=''):
+        return self.context['post_type'] == 'message' and re.search(pattern, self.context['message'])
 
     def send_group_msg(self, message: str):
         dic = {
@@ -60,7 +64,7 @@ class TestPlugin(Plugin):
 
 class TestPlugin2(Plugin):
     def match(self):
-        return self.on_full_match("321")
+        return self.on_reg_match(r'321')
     
     def handle(self):
         self.send_group_msg("yes2")
