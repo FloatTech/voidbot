@@ -44,6 +44,37 @@ class Plugin:
         self.ws.send(json.dumps(dic))
 
 
+'''
+在下面加入你自定义的插件
+1.写一个Plugin的子类，重写match和handle方法
+2.将类对象加入Plugins
+'''
+
+class TestPlugin(Plugin):
+    def match(self):
+        return self.on_full_match("123")
+    
+    def handle(self):
+        self.send_group_msg("yes")
+
+
+class TestPlugin2(Plugin):
+    def match(self):
+        return self.on_full_match("321")
+    
+    def handle(self):
+        self.send_group_msg("yes2")
+
+
+Plugins = [
+    TestPlugin,
+    TestPlugin2,
+]
+
+'''
+在上面自定义你的插件
+'''
+
 class PluginPool:
     def __init__(self):
         self.pool = []
@@ -56,9 +87,10 @@ def on_message(ws, message):
     print(message)
     context = json.loads(message)
     if 'post_type' in context:
-        p = Plugin(context)
-        if p.match():
-            p.handle()
+        for P in Plugins:
+            p = P(context)
+            if p.match():
+                p.handle()
 
 
 def on_close(ws):
