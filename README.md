@@ -8,7 +8,7 @@
 ### How to use
 
 1. 需要 Python3 环境，并 `pip install websocket-client`
-2. 启动任意一个 OneBot 实现，如 `go-cqhttp`
+2. 启动任意一个 OneBot 实现，如 `go-cqhttp` ,并打开正向 WS
 3. 在 `voidbot.py` 文件中 注释位置编写你的插件
 4. 直接运行 `voidbot.py` 文件
 
