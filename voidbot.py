@@ -1,10 +1,10 @@
 import websocket
 import threading
 import time
-import json
 import re
 import queue
 import logging
+import json as json_
 from collections import deque
 
 # WebSocket 地址
@@ -26,17 +26,19 @@ class Plugin:
     def handle(self):
         self.send_group_msg("ok")
 
+    def on_message(self):
+        return self.context['post_type'] == 'message'
+
     def on_full_match(self, keyword=''):
-        return self.context['post_type'] == 'message' and self.context[
-            'message'] == keyword
+        return self.on_message() and self.context['message'] == keyword
 
     def on_reg_match(self, pattern=''):
-        return self.context['post_type'] == 'message' and re.search(
-            pattern, self.context['message'])
+        return self.on_message() and re.search(pattern,
+                                               self.context['message'])
 
     def call_api(self, action: str, params: dict) -> dict:
         echo_num, q = echo.get()
-        data = json.dumps({
+        data = json_.dumps({
             "action": action,
             "params": params,
             "echo": echo_num,
@@ -49,6 +51,12 @@ class Plugin:
             return ret
         except queue.Empty:
             logger.error("API调用[{echo_num}] 超时......")
+
+    def send_msg(self, *message):
+        if self.context['group_id']:
+            self.send_group_msg(*message)
+        else:
+            self.send_private_msg(*message)
 
     def send_group_msg(self, *message):
         params = {"group_id": self.context["group_id"], "message": message}
@@ -67,6 +75,30 @@ class Plugin:
             return ret['data']['message_id']
 
 
+def text(string: str) -> dict:
+    return {'type': 'text', 'data': {'text': string}}
+
+
+def at(qq: int) -> dict:
+    return {'type': 'at', 'data': {'qq': qq}}
+
+
+def image(file: str, cache=True) -> dict:
+    return {'type': 'image', 'data': {'file': file, 'cache': cache}}
+
+
+def record(file: str, cache=True) -> dict:
+    return {'type': 'record', 'data': {'file': file, 'cache': cache}}
+
+
+def json(data: str) -> dict:
+    return {'type': 'json', 'data': {'data': data}}
+
+
+def xml(data: str) -> dict:
+    return {'type': 'xml', 'data': {'data': data}}
+
+
 '''
 在下面加入你自定义的插件
 1.写一个Plugin的子类，重写match和handle方法
@@ -76,18 +108,18 @@ class Plugin:
 
 class TestPlugin(Plugin):
     def match(self):
-        return self.on_full_match("123")
+        return self.on_full_match("hello")
 
     def handle(self):
-        self.send_group_msg(ms_text("yes"))
+        self.send_msg(at(self.context['user_id']), text("hello world!"))
 
 
 class TestPlugin2(Plugin):
     def match(self):
-        return self.on_reg_match(r'321')
+        return self.on_reg_match(r'\[CQ:at,qq=\d+\] 菜单')
 
     def handle(self):
-        self.send_group_msg(ms_text("yes2"))
+        self.send_msg(text("没有菜单"))
 
 
 '''
@@ -95,28 +127,8 @@ class TestPlugin2(Plugin):
 '''
 
 
-def ms_text(string: str) -> dict:
-    return {'type': 'text', 'data': {'text': string}}
-
-
-def ms_at(qq: int) -> dict:
-    return {'type': 'at', 'data': {'qq': qq}}
-
-
-def ms_image(file: str, cache=True) -> dict:
-    return {'type': 'image', 'data': {'file': file, 'cache': cache}}
-
-
-def ms_record(file: str, cache=True) -> dict:
-    return {'type': 'record', 'data': {'file': file, 'cache': cache}}
-
-
-def ms_json(data: str) -> dict:
-    return {'type': 'json', 'data': {'data': data}}
-
-
-def on_message(ws, message):
-    context = json.loads(message)
+def on_message(_, message):
+    context = json_.loads(message)
     if 'echo' in context:
         logger.debug(message)
         # 响应报文通过队列传递给调用 API 的函数
@@ -130,11 +142,11 @@ def on_message(ws, message):
         t.start()
 
 
-def on_open(ws):
+def on_open(_):
     logger.debug('连接成功......')
 
 
-def on_close(ws):
+def on_close(_):
     logger.debug('重连中......')
 
 
