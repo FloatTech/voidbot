@@ -7,11 +7,11 @@ import logging
 import json as json_
 from collections import deque
 
-# WebSocket 地址
-websocket_url = 'ws://127.0.0.1:6700/ws'
+WS_URL = 'ws://127.0.0.1:6700/ws'  # WebSocket 地址
+NICKNAME = ['BOT', 'ROBOT']  # 机器人昵称
+SUPER_USER = [12345678, 23456789]  # 主人的 QQ 号
 # 日志设置
-logging.basicConfig(level=logging.DEBUG,
-                    format='[void] %(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='[void] %(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -21,10 +21,10 @@ class Plugin:
         self.context = context
 
     def match(self):
-        return self.on_full_match("xxx")
+        return self.on_full_match("hello")
 
     def handle(self):
-        self.send_group_msg("ok")
+        self.send_msg(text("hello world!"))
 
     def on_message(self):
         return self.context['post_type'] == 'message'
@@ -33,16 +33,28 @@ class Plugin:
         return self.on_message() and self.context['message'] == keyword
 
     def on_reg_match(self, pattern=''):
-        return self.on_message() and re.search(pattern,
-                                               self.context['message'])
+        return self.on_message() and re.search(pattern, self.context['message'])
+
+    def to_me(self):
+        flag = False
+        for nick in NICKNAME + [f"[CQ:at,qq={self.context['self_id']}] "]:
+            if self.on_message() and nick in self.context['message']:
+                flag = True
+                self.context['message'] = self.context['message'].replace(nick, "")
+        return flag
+
+    def super_user(self):
+        for user in SUPER_USER:
+            if user == self.context['user_id']:
+                return True
+        return False
+
+    def admin_user(self):
+        return self.super_user() or self.context['sender']['role'] in ('admin', 'owner')
 
     def call_api(self, action: str, params: dict) -> dict:
         echo_num, q = echo.get()
-        data = json_.dumps({
-            "action": action,
-            "params": params,
-            "echo": echo_num,
-        })
+        data = json_.dumps({"action": action, "params": params, "echo": echo_num})
         logger.info(data)
         self.ws.send(data)
         # 阻塞至响应或者等待30s超时
@@ -100,26 +112,35 @@ def xml(data: str) -> dict:
 
 
 '''
-在下面加入你自定义的插件
-1.写一个Plugin的子类，重写match和handle方法
-2.将类对象加入Plugins
+在下面加入你自定义的插件，自动加载本文件所有的 Plugin 的子类
+只需要写一个 Plugin 的子类，重写 match() 和 handle()
+match() 返回 True 则自动回调 handle()
 '''
 
 
 class TestPlugin(Plugin):
-    def match(self):
-        return self.on_full_match("hello")
+    def match(self):  # 说 hello 则回复
+        return self.on_full_match('hello')
 
     def handle(self):
-        self.send_msg(at(self.context['user_id']), text("hello world!"))
+        self.send_msg(at(self.context['user_id']), text('hello world!'))
 
 
 class TestPlugin2(Plugin):
-    def match(self):
-        return self.on_reg_match(r'\[CQ:at,qq=\d+\] 菜单')
+    def match(self):  # 艾特机器人说菜单则回复
+        return self.to_me() and self.on_full_match('菜单')
 
     def handle(self):
-        self.send_msg(text("没有菜单"))
+        self.send_msg(text('没有菜单'))
+
+
+class TestPlugin3(Plugin):
+    def match(self):  # 戳一戳机器人则回复
+        return self.context['post_type'] == 'notice' and self.context['sub_type'] == 'poke'\
+            and self.context['target_id'] == self.context['self_id']
+
+    def handle(self):
+        self.send_msg(text('请不要戳我 >_<'))
 
 
 '''
@@ -140,14 +161,6 @@ def on_message(_, message):
         # 消息事件，开启线程
         t = threading.Thread(target=plugin_pool, args=(context, ))
         t.start()
-
-
-def on_open(_):
-    logger.debug('连接成功......')
-
-
-def on_close(_):
-    logger.debug('重连中......')
 
 
 def plugin_pool(context: dict):
@@ -178,10 +191,10 @@ class Echo:
 if __name__ == "__main__":
     echo = Echo()
     ws = websocket.WebSocketApp(
-        websocket_url,
+        WS_URL,
         on_message=on_message,
-        on_open=on_open,
-        on_close=on_close,
+        on_open=lambda _: logger.debug('连接成功......'),
+        on_close=lambda _: logger.debug('重连中......'),
     )
     while True:  # 掉线重连
         ws.run_forever()
