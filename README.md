@@ -7,8 +7,10 @@
 
 ### How to use
 
-在注释位置编写你的插件类，并在**Plugins**列表中加入你的类名
-
+1. 需要 Python3 环境，并 `pip install websocket-client`
+2. 启动任意一个 OneBot 实现，如 `go-cqhttp`
+3. 在 `voidbot.py` 文件中 注释位置编写你的插件
+4. 直接运行 `voidbot.py` 文件
 
 
 ### 已经实现的API
