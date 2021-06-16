@@ -65,7 +65,7 @@ class Plugin:
             logger.error("API调用[{echo_num}] 超时......")
 
     def send_msg(self, *message):
-        if self.context['group_id']:
+        if 'group_id' in self.context and self.context['group_id']:
             self.send_group_msg(*message)
         else:
             self.send_private_msg(*message)
