@@ -36,7 +36,7 @@ class Plugin:
     def on_reg_match(self, pattern="") -> bool:
         return self.on_message() and re.search(pattern, self.context["message"])
 
-    def to_me(self) -> bool:
+    def only_to_me(self) -> bool:
         flag = False
         for nick in NICKNAME + [f"[CQ:at,qq={self.context['self_id']}] "]:
             if self.on_message() and nick in self.context["message"]:
@@ -127,7 +127,7 @@ class TestPlugin(Plugin):
 
 class TestPlugin2(Plugin):
     def match(self):  # 艾特机器人说菜单则回复
-        return self.to_me() and self.on_full_match("菜单")
+        return self.only_to_me() and self.on_full_match("菜单")
 
     def handle(self):
         self.send_msg(text("没有菜单"))
