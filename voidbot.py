@@ -111,6 +111,7 @@ def json(data: str) -> dict:
 
 
 def music(data: str) -> dict:
+    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#音乐分享-
     return {"type": "music", "data": {"type": "qq", "id": data}}
 
 
