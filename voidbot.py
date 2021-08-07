@@ -110,6 +110,10 @@ def json(data: str) -> dict:
     return {"type": "json", "data": {"data": data}}
 
 
+def music(data: str) -> dict:
+    return {"type": "music", "data": {"type": "qq", "id": data}}
+
+
 """
 在下面加入你自定义的插件，自动加载本文件所有的 Plugin 的子类
 只需要写一个 Plugin 的子类，重写 match() 和 handle()
