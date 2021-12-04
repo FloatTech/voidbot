@@ -61,57 +61,57 @@ class Plugin:
             logger.error("API调用[{echo_num}] 超时......")
 
     def send_msg(self, *message) -> int:
-        # https://github.com/botuniverse/onebot/blob/master/v11/specs/api/public.md#send_msg-%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF
+        # https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_msg-%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF
         if "group_id" in self.context and self.context["group_id"]:
             return self.send_group_msg(*message)
         else:
             return self.send_private_msg(*message)
 
     def send_private_msg(self, *message) -> int:
-        # https://github.com/botuniverse/onebot/blob/master/v11/specs/api/public.md#send_private_msg-%E5%8F%91%E9%80%81%E7%A7%81%E8%81%8A%E6%B6%88%E6%81%AF
+        # https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_private_msg-%E5%8F%91%E9%80%81%E7%A7%81%E8%81%8A%E6%B6%88%E6%81%AF
         params = {"user_id": self.context["user_id"], "message": message}
         ret = self.call_api("send_private_msg", params)
         return 0 if ret is None or ret["status"] == "failed" else ret["data"]["message_id"]
 
     def send_group_msg(self, *message) -> int:
-        # https://github.com/botuniverse/onebot/blob/master/v11/specs/api/public.md#send_group_msg-%E5%8F%91%E9%80%81%E7%BE%A4%E6%B6%88%E6%81%AF
+        # https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_group_msg-%E5%8F%91%E9%80%81%E7%BE%A4%E6%B6%88%E6%81%AF
         params = {"group_id": self.context["group_id"], "message": message}
         ret = self.call_api("send_group_msg", params)
         return 0 if ret is None or ret["status"] == "failed" else ret["data"]["message_id"]
 
 
 def text(string: str) -> dict:
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#%E7%BA%AF%E6%96%87%E6%9C%AC
+    # https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E7%BA%AF%E6%96%87%E6%9C%AC
     return {"type": "text", "data": {"text": string}}
 
 
 def image(file: str, cache=True) -> dict:
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#%E5%9B%BE%E7%89%87
+    # https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E5%9B%BE%E7%89%87
     return {"type": "image", "data": {"file": file, "cache": cache}}
 
 
 def record(file: str, cache=True) -> dict:
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#%E8%AF%AD%E9%9F%B3
+    # https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E8%AF%AD%E9%9F%B3
     return {"type": "record", "data": {"file": file, "cache": cache}}
 
 
 def at(qq: int) -> dict:
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#%E6%9F%90%E4%BA%BA
+    # https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E6%9F%90%E4%BA%BA
     return {"type": "at", "data": {"qq": qq}}
 
 
 def xml(data: str) -> dict:
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#xml-%E6%B6%88%E6%81%AF
+    # https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#xml-%E6%B6%88%E6%81%AF
     return {"type": "xml", "data": {"data": data}}
 
 
 def json(data: str) -> dict:
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#json-%E6%B6%88%E6%81%AF
+    # https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#json-%E6%B6%88%E6%81%AF
     return {"type": "json", "data": {"data": data}}
 
 
 def music(data: str) -> dict:
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/message/segment.md#音乐分享-
+    # https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E9%9F%B3%E4%B9%90%E5%88%86%E4%BA%AB-
     return {"type": "music", "data": {"type": "qq", "id": data}}
 
 
