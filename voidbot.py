@@ -178,7 +178,7 @@ class Echo:
 
 
 def on_message(_, message):
-    # https://github.com/botuniverse/onebot/blob/master/v11/specs/event/README.md
+    # https://github.com/botuniverse/onebot-11/blob/master/event/README.md
     context = json_.loads(message)
     if "echo" in context:
         logger.debug("调用返回 -> " + message)
